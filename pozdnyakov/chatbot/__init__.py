@@ -34,7 +34,6 @@ class PozdnyakovChatBot:
         saving_dir: str = default_saving_dir,
         use_cuda: bool = True,
         model_path: str = None,
-
         max_seq: int = default_max_seq,
         min_seq: int = default_min_seq,
         max_history_size: int = default_max_history_size,
@@ -108,11 +107,12 @@ class PozdnyakovChatBot:
                 model_path,
                 device_map="auto",
                 quantization_config=self.bnb_config,
-                attn_implementation="eager",
+                attn_implementation=None,
             )
         else:
             self.model = AutoModelForCausalLM.from_pretrained(
-                model_path
+                model_path,
+                attn_implementation="eager",
             )
 
     @staticmethod
