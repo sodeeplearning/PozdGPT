@@ -1,6 +1,6 @@
-numpy<2
-transformers
-accelerate
+numpy
+transformers~=4.57.0
+accelerate~=1.13.0
 bitsandbytes
 torch
-peft
+peft~=0.19.1
