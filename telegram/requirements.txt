@@ -1,4 +1,0 @@
-aiogram
-pydantic
-requests
-dotenv

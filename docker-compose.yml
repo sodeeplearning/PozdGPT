@@ -1,0 +1,50 @@
+services:
+  download-model:
+    image: python:3.12-slim
+    volumes:
+      - ./weights:/weights
+    command: >
+      bash -c "pip install huggingface_hub &&
+      hf download sodeeplearning/pozdgpt
+      --include 'PozdGPT-awq-4bit/*'
+      --local-dir /weights"
+  vllm:
+    image: vllm/vllm-openai:latest
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    ports:
+      - "${VLLM_PORT}:${VLLM_PORT}"
+    volumes:
+      - ./weights:/weights
+    restart: unless-stopped
+    environment:
+      VLLM_USE_FLASHINFER_SAMPLER: "0"
+    command:
+      - --model
+      - /weights/PozdGPT-awq-4bit
+      - --served-model-name
+      - pozdgpt
+      - --quantization
+      - compressed-tensors
+      - --max-model-len
+      - "8192"
+      - --gpu-memory-utilization
+      - "0.88"
+      - --max-num-seqs
+      - "6"
+      - --kv-cache-dtype
+      - fp8
+      - --enable-prefix-caching
+      - --api-key
+      - $VLLM_API_KEY
+      - --port
+      - $VLLM_PORT
+    depends_on:
+      download-model:
+        condition: service_completed_successfully
