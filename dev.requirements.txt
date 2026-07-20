@@ -5,3 +5,4 @@ datasets
 trl
 llmcompressor
 huggingface-hub
+redis

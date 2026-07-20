@@ -1,0 +1,5 @@
+aiogram
+openai
+redis
+loguru
+dotenv

@@ -8,6 +8,7 @@ services:
       hf download sodeeplearning/pozdgpt
       --include 'PozdGPT-awq-4bit/*'
       --local-dir /weights"
+
   vllm:
     image: vllm/vllm-openai:latest
     runtime: nvidia
@@ -48,3 +49,22 @@ services:
     depends_on:
       download-model:
         condition: service_completed_successfully
+
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    volumes:
+      - ./.redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
+  telegram:
+    build:
+      dockerfile: ./service_bot/Dockerfile
+    depends_on:
+      redis:
+        condition: service_healthy
