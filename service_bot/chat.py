@@ -3,7 +3,7 @@ from openai import AsyncOpenAI
 from config import ChatBotParams, DefaultModelParams
 
 
-class Chat:
+class ChatBot:
     def __init__(self):
         self.client = AsyncOpenAI(
             base_url=ChatBotParams.vllm_host,
@@ -43,4 +43,4 @@ class Chat:
         return response.choices[0].message.content
 
 
-chatbot = Chat()
+chatbot = ChatBot()

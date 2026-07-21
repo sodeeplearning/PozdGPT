@@ -3,3 +3,4 @@ openai
 redis
 loguru
 dotenv
+asyncpg

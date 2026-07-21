@@ -1,6 +1,7 @@
 .idea
 .claude
 .redis_data
+.pg_data
 test.py
 weights
 Pozd*

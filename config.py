@@ -9,10 +9,16 @@ load_dotenv()
 @dataclass
 class TelegramBotParams:
     bot_token = environ["BOT_TOKEN"]
-    redis_port = environ.get("REDIS_PORT")
-    redis_host = environ.get("REDIS_HOST")
+    redis_port = environ.get("REDIS_PORT", 6379)
+    redis_host = environ.get("REDIS_HOST", "redis")
     history_size = environ.get("HISTORY_SIZE", 20)
     expiration_date = environ.get("EXPIRATION_DATE", 7)
+    max_pool_connections = int(environ.get("MAX_POOL_CONNECTIONS", 20))
+    db_host = environ.get("DB_HOST", "postgres")
+    db_user = environ.get("DB_USER", "bot")
+    db_password = environ["DB_PASSWORD"]
+    db_name = environ.get("DB_NAME", "botdb")
+    db_port = environ.get("DB_PORT", 5432)
 
 
 @dataclass
@@ -28,4 +34,3 @@ class DefaultModelParams:
     max_tokens = 1024
     top_p = 0.9
     repetition_penalty = 1.1
-

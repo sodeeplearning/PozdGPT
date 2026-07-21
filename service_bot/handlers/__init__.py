@@ -2,13 +2,16 @@ from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 
-from . import manage, send
+from . import comment, hooks, manage, payment, send
 
 
 router = Router()
 
 router.include_routers(
+    comment.router,
+    hooks.router,
     manage.router,
+    payment.router,
     send.router,
 )
 

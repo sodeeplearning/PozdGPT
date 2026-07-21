@@ -62,9 +62,26 @@ services:
       timeout: 5s
       retries: 10
 
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: $DB_USER
+      POSTGRES_PASSWORD: $DB_PASSWORD
+      POSTGRES_DB: $DB_NAME
+    volumes:
+      - ./.pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   telegram:
     build:
       dockerfile: ./service_bot/Dockerfile
     depends_on:
       redis:
+        condition: service_healthy
+      postgres:
         condition: service_healthy

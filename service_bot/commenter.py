@@ -3,7 +3,7 @@ from openai import AsyncOpenAI
 from config import ChatBotParams, DefaultModelParams
 
 
-class NonStreamChat:
+class CommenterBot:
     def __init__(self):
         self.client = AsyncOpenAI(
             base_url=ChatBotParams.vllm_host,
@@ -24,3 +24,6 @@ class NonStreamChat:
         )
         content = response.choices[0].message.content
         return content
+
+
+commenter = CommenterBot()
