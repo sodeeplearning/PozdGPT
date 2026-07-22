@@ -16,7 +16,7 @@ class GeneratingState(StatesGroup):
 
 
 @router.message(F.text, StateFilter(None))
-async def stream_response(message: Message, state: FSMContext):
+async def chat_response(message: Message, state: FSMContext):
     await state.set_state(GeneratingState.generating)
     try:
         messages = memory.read_history(message.from_user.id)

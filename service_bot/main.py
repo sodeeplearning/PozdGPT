@@ -30,6 +30,13 @@ async def init_db(pool: asyncpg.Pool):
                     FOREIGN KEY (owner_user_id)
                     REFERENCES users(tg_user_id)
             )""")
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS transactions (
+                charge_id TEXT PRIMARY KEY,
+                tg_user_id BIGINT,
+                messages_added INTEGER,
+                created_at TIMESTAMPTZ DEFAULT now()
+            )""")
 
 
 async def main():
