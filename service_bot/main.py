@@ -18,6 +18,7 @@ async def init_db(pool: asyncpg.Pool):
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 tg_user_id BIGINT PRIMARY KEY,
+                username VARCHAR,
                 balance INTEGER DEFAULT 100
             )""")
         await conn.execute("""

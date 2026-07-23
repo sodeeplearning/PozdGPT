@@ -22,8 +22,8 @@ async def startup_event(message: Message, db: asyncpg.Pool):
     await message.reply("PozdGPT вас приветствует!")
 
     await db.execute("""
-        INSERT INTO users (tg_user_id, balance)
-        VALUES ($1, 100)
+        INSERT INTO users (tg_user_id, username, balance)
+        VALUES ($1, $2, 50)
         ON CONFLICT (tg_user_id) DO NOTHING""",
-        message.from_user.id,
+        message.from_user.id, message.from_user.username,
     )
