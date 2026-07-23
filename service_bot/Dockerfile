@@ -14,5 +14,6 @@ RUN pip install --upgrade pip \
 COPY ./service_bot .
 COPY config.py config.py
 COPY .env .env
+COPY ./docs ./docs
 
 CMD ["python", "main.py"]

@@ -1,22 +1,29 @@
-from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, LabeledPrice, PreCheckoutQuery
-from aiogram.filters import Command
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-
 import asyncpg
 from loguru import logger
+
+from aiogram import Router, F
+from aiogram.enums import ParseMode
+from aiogram.types import Message, CallbackQuery, FSInputFile, LabeledPrice, PreCheckoutQuery
+from aiogram.filters import Command
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
 router = Router()
 
 
 packages = { # package_name: commentaries amount - price in telegram stars
-    "package_1000": {"messages_amount": 1000, "price": 1}
+    "package_100": {"messages_amount": 100, "price": 1}
 }
 
 
-@router.message(Command("buy"))
-async def buy_package(message: Message):
+@router.message(Command("comment"))
+async def commentary_info(message: Message, db: asyncpg.Pool):
+    result = await db.fetchrow(
+        "SELECT balance FROM users WHERE tg_user_id = $1",
+        message.from_user.id,
+    )
+    user_balance = result["balance"]
+
     kb = InlineKeyboardBuilder()
     for package_name, data in packages.items():
         kb.button(
@@ -24,7 +31,29 @@ async def buy_package(message: Message):
             callback_data=f"buy:{package_name}",
         )
     kb.adjust(1)
-    await message.reply("PozdGPT - комментатор", reply_markup=kb.as_markup())
+
+    sample_photo = FSInputFile("docs/images/commentary_sample.png")
+    text = f"""
+    **PozdGPT — комментатор**
+
+    🤖 PozdGPT может автоматически писать комментарии под вашими постами.
+
+    ⭐ Осталось комментариев: **{user_balance}**
+
+    Чтобы подключить:
+    1. Добавьте @pozdgpt_bot администратором в канал (без разрешений).
+    2. Добавьте @pozdgpt_bot администратором в группу обсуждений (тоже без разрешений).
+    3. Готово! Теперь PozdGPT сможет оставлять комментарии под новыми постами.
+
+    Если лимит закончится — его можно пополнить ниже.
+    """
+
+    await message.reply_photo(
+        photo=sample_photo,
+        caption=text,
+        reply_markup=kb.as_markup(),
+        parse_mode=ParseMode.MARKDOWN,
+    )
 
 
 @router.callback_query(F.data.startswith("buy:"))
