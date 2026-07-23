@@ -1,3 +1,5 @@
+import asyncpg
+
 from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
@@ -16,6 +18,12 @@ router.include_routers(
 )
 
 @router.message(CommandStart())
-async def startup_event(message: Message):
-    await message.reply("Гойда!")
+async def startup_event(message: Message, db: asyncpg.Pool):
+    await message.reply("PozdGPT вас приветствует!")
 
+    await db.execute("""
+        INSERT INTO users (tg_user_id, balance)
+        VALUES ($1, 100)
+        ON CONFLICT (tg_user_id) DO NOTHING""",
+        message.from_user.id,
+    )

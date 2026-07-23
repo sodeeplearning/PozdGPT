@@ -18,7 +18,7 @@ async def init_db(pool: asyncpg.Pool):
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 tg_user_id BIGINT PRIMARY KEY,
-                balance INTEGER DEFAULT 0
+                balance INTEGER DEFAULT 100
             )""")
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS channels (
@@ -35,6 +35,7 @@ async def init_db(pool: asyncpg.Pool):
                 charge_id TEXT PRIMARY KEY,
                 tg_user_id BIGINT,
                 messages_added INTEGER,
+                price FLOAT,
                 created_at TIMESTAMPTZ DEFAULT now()
             )""")
 

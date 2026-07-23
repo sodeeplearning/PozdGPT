@@ -62,8 +62,8 @@ async def on_payment(message: Message, db: asyncpg.Pool):
         async with conn.transaction():
             try:
                 await conn.execute(
-                    "INSERT INTO transactions (charge_id, tg_user_id, messages_added) VALUES ($1, $2, $3)",
-                    charge_id, message.from_user.id, data["messages_amount"],
+                    "INSERT INTO transactions (charge_id, tg_user_id, messages_added, price) VALUES ($1, $2, $3, $4)",
+                    charge_id, message.from_user.id, data["messages_amount"], data["price"]
                 )
                 await conn.execute(
                     "UPDATE users SET balance = balance + $1 WHERE tg_user_id = $2",
