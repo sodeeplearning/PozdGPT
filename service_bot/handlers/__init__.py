@@ -4,7 +4,7 @@ from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 
-from . import comment, hooks, manage, payment, send
+from . import comment, hooks, manage, payment, dialog
 
 
 router = Router()
@@ -14,7 +14,7 @@ router.include_routers(
     hooks.router,
     manage.router,
     payment.router,
-    send.router,
+    dialog.router,
 )
 
 @router.message(CommandStart())
