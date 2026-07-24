@@ -25,7 +25,7 @@ from llama_cpp import Llama
 
 llm = Llama.from_pretrained(
 	repo_id="sodeeplearning/pozdgpt",
-	filename="PozdGPT-Q4_K_M.gguf",
+	filename="PozdGPT-Q4_K_M.gguf", # Or Q6_K, Q8_0, f16
 )
 ```
 
@@ -76,7 +76,15 @@ If you want to create another one service:
 - add all required logic for working with Docker
 - explain your changes in pull-request conversation
 
-### brief
+### Stack
+- Fine-tuning: **Unsloth**, **trl**, **transformers**
+- Inference: **vLLM**
+- Telegram: **aiogram**
+- Chat history database: **Redis**
+- Users, channels, transactions databases: **PostgreSQL** + **asyncpg**
+- Deploy: **Docker**
+
+### Brief
 Be brave to open a pull request if you think that
 your changes can help the project.
 
@@ -85,7 +93,7 @@ Fell free to contact the team if you need it
 # Team info
 [Vitaliy Petreev](https://github.com/sodeeplearning) - Head of the project
 
-# Contacts
+### Contacts
 - [Telegram](https://t.me/Notfag)
 - email: vitaliy.petreev@gmail.com
 
