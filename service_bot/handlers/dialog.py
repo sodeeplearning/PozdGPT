@@ -39,7 +39,7 @@ async def chat_response(message: Message, state: FSMContext):
 
 @router.message(F.chat.type.in_((ChatType.GROUP, ChatType.SUPERGROUP)), F.text.regexp(mention_re))
 async def mention_response(message: Message):
-    question = mention_re.sub("", message.text, count=1).strip()
+    question = message.text.replace("@pozdgpt_bot", "")
     if not question:
         return
 
