@@ -1,9 +1,4 @@
 aiogram
 openai
-unsloth
-datasets
-trl
-llmcompressor
-huggingface-hub
 redis
 asyncpg
