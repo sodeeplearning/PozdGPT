@@ -1,0 +1,6 @@
+aiogram
+openai
+redis
+loguru
+dotenv
+asyncpg
