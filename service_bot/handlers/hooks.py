@@ -11,7 +11,6 @@ router = Router()
 
 @router.my_chat_member()
 async def on_bot_added(event: ChatMemberUpdated, db: asyncpg.Pool):
-    logger.info(f"my_chat_member event: status={event.new_chat_member.status}, chat={event.chat.id}")
     if event.new_chat_member.status != ChatMemberStatus.ADMINISTRATOR:
         return
 
