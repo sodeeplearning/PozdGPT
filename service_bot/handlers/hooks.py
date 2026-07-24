@@ -2,6 +2,7 @@ import asyncpg
 from loguru import logger
 
 from aiogram import Router
+from aiogram.enums import ChatMemberStatus
 from aiogram.types import ChatMemberUpdated
 
 
@@ -11,24 +12,20 @@ router = Router()
 @router.my_chat_member()
 async def on_bot_added(event: ChatMemberUpdated, db: asyncpg.Pool):
     logger.info(f"my_chat_member event: status={event.new_chat_member.status}, chat={event.chat.id}")
-    if event.new_chat_member.status != "administrator":
+    if event.new_chat_member.status != ChatMemberStatus.ADMINISTRATOR:
         return
 
     group_id = event.chat.id
     chat_info = await event.bot.get_chat(group_id)
     channel_id = chat_info.linked_chat_id
     if not channel_id:
+        await event.bot.send_message(
+            event.from_user.id,
+            f"Группа {chat_info.title} не связана ни с одним каналом",
+        )
         return
 
-    channel_info = await event.bot.get_chat(channel_id)
-    logger.info("checkpoint 1")
-
-    logger.info("checkpoint 2")
-    member = await event.bot.get_chat_member(channel_id, event.from_user.id)
-    if member.status not in ("administrator", "creator"):
-        return
-
-    logger.info(f"PozdGPT has been added to {channel_info.title} channel")
+    logger.info(f"PozdGPT has been added to {chat_info.title} group")
 
     await db.execute(
         """
@@ -42,5 +39,5 @@ async def on_bot_added(event: ChatMemberUpdated, db: asyncpg.Pool):
 
     await event.bot.send_message(
         event.from_user.id,
-        f"Канал {channel_info.title} привязан!"
+        f"Группа-дискуссия {chat_info.title} привязана!"
     )

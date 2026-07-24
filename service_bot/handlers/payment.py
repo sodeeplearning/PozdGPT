@@ -41,9 +41,8 @@ async def commentary_info(message: Message, db: asyncpg.Pool):
     ⭐ Осталось комментариев: **{user_balance}**
 
     Чтобы подключить:
-    1. Добавьте @pozdgpt_bot администратором в канал (без разрешений).
-    2. Добавьте @pozdgpt_bot администратором в группу обсуждений (тоже без разрешений).
-    3. Готово! Теперь PozdGPT сможет оставлять комментарии под новыми постами.
+    Добавьте PozdGPT администратором в группу обсуждений (можно без каких-либо разрешений).
+    Готово! Теперь PozdGPT сможет оставлять комментарии под новыми постами.
 
     Если лимит закончится — его можно пополнить ниже.
     """
@@ -51,8 +50,8 @@ async def commentary_info(message: Message, db: asyncpg.Pool):
     await message.reply_photo(
         photo=sample_photo,
         caption=text,
-        reply_markup=kb.as_markup(),
         parse_mode=ParseMode.MARKDOWN,
+        reply_markup=kb.as_markup(),
     )
 
 
