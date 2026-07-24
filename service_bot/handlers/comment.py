@@ -1,6 +1,10 @@
 from aiogram import Router, F
+from aiogram.exceptions import TelegramRetryAfter
 from aiogram.types import Message
+
+import asyncio
 import asyncpg
+from loguru import logger
 
 from commenter import commenter
 
@@ -8,7 +12,7 @@ from commenter import commenter
 router = Router()
 
 
-@router.message(F.is_automatic_forward == True)
+@router.message(F.text, F.is_automatic_forward == True)
 async def write_comment(message: Message, db: asyncpg.Pool):
     row = await db.fetchrow(
         """
@@ -30,4 +34,10 @@ async def write_comment(message: Message, db: asyncpg.Pool):
 
     generated_comment = await commenter(message.text)
 
-    await message.reply(generated_comment)
+    try:
+        await message.reply(generated_comment)
+    except TelegramRetryAfter as e:
+        logger.warning(
+            f"Failed to write comment due to flood control. Sleeping {e.retry_after} seconds")
+        await asyncio.sleep(e.retry_after)
+        await message.reply(generated_comment)

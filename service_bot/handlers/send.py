@@ -19,9 +19,11 @@ class GeneratingState(StatesGroup):
 async def chat_response(message: Message, state: FSMContext):
     await state.set_state(GeneratingState.generating)
     try:
+        temp_message = await message.reply(f"PozdGPT думает...")
         messages = memory.read_history(message.from_user.id)
         messages.append({"role": "user", "content": message.text})
         ai_response = await chatbot.non_stream(messages)
+        await temp_message.delete()
         memory.add_qa(message.from_user.id, message.text, ai_response)
         await message.reply(ai_response)
     finally:

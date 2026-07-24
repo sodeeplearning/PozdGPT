@@ -6,3 +6,4 @@ trl
 llmcompressor
 huggingface-hub
 redis
+asyncpg
