@@ -1,4 +1,5 @@
 from aiogram import Router, F
+from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramRetryAfter
 from aiogram.types import Message
 
@@ -35,9 +36,9 @@ async def write_comment(message: Message, db: asyncpg.Pool):
     generated_comment = await commenter(message.text)
 
     try:
-        await message.reply(generated_comment)
+        await message.reply(generated_comment, parse_mode=ParseMode.MARKDOWN)
     except TelegramRetryAfter as e:
         logger.warning(
             f"Failed to write comment due to flood control. Sleeping {e.retry_after} seconds")
         await asyncio.sleep(e.retry_after)
-        await message.reply(generated_comment)
+        await message.reply(generated_comment, parse_mode=ParseMode.MARKDOWN)

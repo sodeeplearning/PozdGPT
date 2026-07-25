@@ -3,7 +3,7 @@ import re
 import uuid
 
 from aiogram import Router, F
-from aiogram.enums import ChatType
+from aiogram.enums import ChatType, ParseMode
 from aiogram.filters import StateFilter
 from aiogram.types import Message, InlineQueryResultArticle, InputTextMessageContent
 from aiogram.fsm.context import FSMContext
@@ -35,7 +35,7 @@ async def chat_response(message: Message, state: FSMContext):
 
         await temp_message.delete()
         memory.add_qa(message.from_user.id, message.text, ai_response)
-        await message.reply(ai_response)
+        await message.reply(ai_response, parse_mode=ParseMode.MARKDOWN)
     finally:
         await state.clear()
 
@@ -60,11 +60,14 @@ async def mention_response(message: Message, db: asyncpg.Pool):
             result=InlineQueryResultArticle(
                 id=str(uuid.uuid4()),
                 title="Guest Mode ответ",
-                input_message_content=InputTextMessageContent(message_text=ai_response),
+                input_message_content=InputTextMessageContent(
+                    message_text=ai_response,
+                    parse_mode=ParseMode.MARKDOWN,
+                ),
             ),
         )
     else:
-        await message.reply(ai_response)
+        await message.reply(ai_response, parse_mode=ParseMode.MARKDOWN)
 
     if message.from_user:
         await db.execute("""
