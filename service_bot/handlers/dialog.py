@@ -49,10 +49,15 @@ async def mention_response(message: Message, db: asyncpg.Pool):
     if not question:
         return
 
+    messages = []
     if message.reply_to_message and message.reply_to_message.text:
-        question = f"{message.reply_to_message.text} \n{question}"
+        if message.reply_to_message.from_user.id == message.bot.id:
+            messages.append({"role": "assistant", "content": message.reply_to_message.text})
+        else:
+            question = f"{message.reply_to_message.text} \n{question}"
+    messages.append({"role": "user", "content": question})
 
-    ai_response = await chatbot.non_stream([{"role": "user", "content": question}])
+    ai_response = await chatbot.non_stream(messages)
 
     if message.guest_query_id:
         await message.bot.answer_guest_query(
