@@ -1,9 +1,10 @@
 import re
+import uuid
 
 from aiogram import Router, F
 from aiogram.enums import ChatType
 from aiogram.filters import StateFilter
-from aiogram.types import Message
+from aiogram.types import Message, InlineQueryResultArticle, InputTextMessageContent
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
@@ -37,15 +38,27 @@ async def chat_response(message: Message, state: FSMContext):
         await state.clear()
 
 
+@router.guest_message()
 @router.message(F.chat.type.in_((ChatType.GROUP, ChatType.SUPERGROUP)), F.text.regexp(mention_re))
 async def mention_response(message: Message):
-    question = message.text.replace("@pozdgpt_bot", "")
+    if not message.text:
+        return
+    question = mention_re.sub("", message.text).strip()
     if not question:
         return
-
     if message.reply_to_message and message.reply_to_message.text:
-        question = f"{message.reply_to_message.text} Вопрос: {question}"
+        question = f"{message.reply_to_message.text} \n{question}"
 
-    messages = [{"role": "user", "content": question}]
-    ai_response = await chatbot.non_stream(messages)
-    await message.reply(ai_response)
+    ai_response = await chatbot.non_stream([{"role": "user", "content": question}])
+
+    if message.guest_query_id:
+        await message.bot.answer_guest_query(
+            guest_query_id=message.guest_query_id,
+            result=InlineQueryResultArticle(
+                id=str(uuid.uuid4()),
+                title="Guest Mode ответ",
+                input_message_content=InputTextMessageContent(message_text=ai_response),
+            ),
+        )
+    else:
+        await message.reply(ai_response)
