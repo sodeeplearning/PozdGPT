@@ -1,3 +1,4 @@
+import asyncpg
 import re
 import uuid
 
@@ -10,6 +11,7 @@ from aiogram.fsm.state import State, StatesGroup
 
 from chat import chatbot
 from memory import memory
+from config import Payment
 
 
 router = Router()
@@ -40,12 +42,13 @@ async def chat_response(message: Message, state: FSMContext):
 
 @router.guest_message()
 @router.message(F.chat.type.in_((ChatType.GROUP, ChatType.SUPERGROUP)), F.text.regexp(mention_re))
-async def mention_response(message: Message):
+async def mention_response(message: Message, db: asyncpg.Pool):
     if not message.text:
         return
     question = mention_re.sub("", message.text).strip()
     if not question:
         return
+
     if message.reply_to_message and message.reply_to_message.text:
         question = f"{message.reply_to_message.text} \n{question}"
 
@@ -62,3 +65,11 @@ async def mention_response(message: Message):
         )
     else:
         await message.reply(ai_response)
+
+    if message.from_user:
+        await db.execute("""
+            INSERT INTO users (tg_user_id, username, balance)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (tg_user_id) DO NOTHING""",
+            message.from_user.id, message.from_user.username, Payment.default_user_messages,
+        )

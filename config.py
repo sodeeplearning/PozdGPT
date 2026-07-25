@@ -22,6 +22,14 @@ class TelegramBotParams:
 
 
 @dataclass
+class Payment:
+    packages = {  # package_name: commentaries amount - price in telegram stars
+        "package_100": {"messages_amount": 100, "price": 1}
+    }
+    default_user_messages = 50
+
+
+@dataclass
 class ChatBotParams:
     vllm_host = f"http://vllm:{environ.get("VLLM_PORT", 8148)}/v1"
     vllm_api_key = environ.get("VLLM_API_KEY", "key")

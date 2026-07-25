@@ -7,13 +7,10 @@ from aiogram.types import Message, CallbackQuery, FSInputFile, LabeledPrice, Pre
 from aiogram.filters import Command
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from config import Payment
+
 
 router = Router()
-
-
-packages = { # package_name: commentaries amount - price in telegram stars
-    "package_100": {"messages_amount": 100, "price": 1}
-}
 
 
 @router.message(Command("comment"))
@@ -25,7 +22,7 @@ async def commentary_info(message: Message, db: asyncpg.Pool):
     user_balance = result["balance"]
 
     kb = InlineKeyboardBuilder()
-    for package_name, data in packages.items():
+    for package_name, data in Payment.packages.items():
         kb.button(
             text=f"{data["messages_amount"]} комментариев за {data["price"]}⭐",
             callback_data=f"buy:{package_name}",
@@ -58,7 +55,7 @@ async def commentary_info(message: Message, db: asyncpg.Pool):
 @router.callback_query(F.data.startswith("buy:"))
 async def send_invoice(callback: CallbackQuery):
     package_name = callback.data.split(":", 1)[1]
-    package_data = packages[package_name]
+    package_data = Payment.packages[package_name]
 
     await callback.bot.send_invoice(
         chat_id=callback.message.chat.id,
@@ -83,7 +80,7 @@ async def pre_checkout(query: PreCheckoutQuery):
 async def on_payment(message: Message, db: asyncpg.Pool):
     logger.info("Received payment")
     payload = message.successful_payment.invoice_payload
-    data = packages[payload]
+    data = Payment.packages[payload]
     charge_id = message.successful_payment.telegram_payment_charge_id
 
     async with db.acquire() as conn:
