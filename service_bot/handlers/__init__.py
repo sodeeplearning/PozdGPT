@@ -4,7 +4,7 @@ from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 
-from . import comment, hooks, manage, payment, dialog
+from . import admin, comment, hooks, manage, payment, dialog
 
 from config import Payment
 
@@ -12,6 +12,7 @@ from config import Payment
 router = Router()
 
 router.include_routers(
+    admin.router,
     comment.router,
     hooks.router,
     manage.router,

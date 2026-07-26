@@ -20,6 +20,7 @@ class TelegramBotParams:
     db_name = environ.get("DB_NAME", "botdb")
     db_port = int(environ.get("DB_PORT", 5432))
     telegram_channel_id = environ["TELEGRAM_CHANNEL_ID"]
+    admins_ids = [int(aid) for aid in environ["ADMINS"].split(",")]
 
 
 @dataclass
