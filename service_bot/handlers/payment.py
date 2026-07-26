@@ -3,21 +3,41 @@ from loguru import logger
 
 from aiogram import Router, F
 from aiogram.enums import ParseMode
-from aiogram.types import Message, CallbackQuery, FSInputFile, LabeledPrice, PreCheckoutQuery
+from aiogram.types import (
+    Message,
+    CallbackQuery,
+    FSInputFile,
+    LabeledPrice,
+    PreCheckoutQuery,
+    ChatMemberMember,
+    ChatMemberAdministrator,
+    ChatMemberOwner,
+)
 from aiogram.filters import Command
+from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+from config import TelegramBotParams, Payment
 
 
 router = Router()
 
 
-packages = { # package_name: commentaries amount - price in telegram stars
-    "package_100": {"messages_amount": 100, "price": 1}
-}
+class PackageCallbackData(CallbackData, prefix="buy"):
+    messages_amount: int
+    price: int
 
 
 @router.message(Command("comment"))
 async def commentary_info(message: Message, db: asyncpg.Pool):
+    is_subscribed = False
+    channel_member = await message.bot.get_chat_member(
+        chat_id=TelegramBotParams.telegram_channel_id,
+        user_id=message.from_user.id,
+    )
+    if isinstance(channel_member, (ChatMemberMember, ChatMemberAdministrator, ChatMemberOwner)):
+        is_subscribed = True
+
     result = await db.fetchrow(
         "SELECT balance FROM users WHERE tg_user_id = $1",
         message.from_user.id,
@@ -25,12 +45,20 @@ async def commentary_info(message: Message, db: asyncpg.Pool):
     user_balance = result["balance"]
 
     kb = InlineKeyboardBuilder()
-    for package_name, data in packages.items():
+    for package_name, data in Payment.packages.items():
+        messages = int(data["messages_amount"] * (1 + Payment.subscribed_addition_percent / 100 * is_subscribed))
         kb.button(
-            text=f"{data["messages_amount"]} комментариев за {data["price"]}⭐",
-            callback_data=f"buy:{package_name}",
+            text=f"{messages} комментариев за {data["price"]}⭐",
+            callback_data=PackageCallbackData(
+                messages_amount=messages,
+                price=data["price"],
+            ),
         )
-    kb.adjust(1)
+    kb.button(
+        text="Проверить подписку на канал PozdGPT",
+        callback_data="comment_recall",
+    )
+    kb.adjust(1, 1)
 
     sample_photo = FSInputFile("docs/images/commentary_sample.png")
     text = f"""
@@ -45,6 +73,7 @@ async def commentary_info(message: Message, db: asyncpg.Pool):
     Готово! Теперь PozdGPT сможет оставлять комментарии под новыми постами.
 
     Если лимит закончится — его можно пополнить ниже.
+    (с подпиской на канал https://t.me/pozdgpt на {Payment.subscribed_addition_percent}% больше комментариев!)
     """
 
     await message.reply_photo(
@@ -55,10 +84,15 @@ async def commentary_info(message: Message, db: asyncpg.Pool):
     )
 
 
+@router.callback_query(F.data == "comment_recall")
+async def commentary_handler_recall(callback: CallbackQuery, db: asyncpg.Pool):
+    await commentary_info(callback.message.reply_to_message, db)
+
+
 @router.callback_query(F.data.startswith("buy:"))
 async def send_invoice(callback: CallbackQuery):
     package_name = callback.data.split(":", 1)[1]
-    package_data = packages[package_name]
+    package_data = Payment.packages[package_name]
 
     await callback.bot.send_invoice(
         chat_id=callback.message.chat.id,
@@ -83,7 +117,7 @@ async def pre_checkout(query: PreCheckoutQuery):
 async def on_payment(message: Message, db: asyncpg.Pool):
     logger.info("Received payment")
     payload = message.successful_payment.invoice_payload
-    data = packages[payload]
+    data = Payment.packages[payload]
     charge_id = message.successful_payment.telegram_payment_charge_id
 
     async with db.acquire() as conn:

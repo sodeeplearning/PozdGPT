@@ -19,7 +19,16 @@ class TelegramBotParams:
     db_password = environ["DB_PASSWORD"]
     db_name = environ.get("DB_NAME", "botdb")
     db_port = int(environ.get("DB_PORT", 5432))
+    telegram_channel_id = environ["TELEGRAM_CHANNEL_ID"]
 
+
+@dataclass
+class Payment:
+    packages = {  # package_name: commentaries amount - price in telegram stars
+        "package_100": {"messages_amount": 100, "price": 3}
+    }
+    default_user_messages = 50
+    subscribed_addition_percent = 20
 
 @dataclass
 class ChatBotParams:
