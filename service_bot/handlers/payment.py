@@ -24,6 +24,7 @@ router = Router()
 
 
 class PackageCallbackData(CallbackData, prefix="buy"):
+    package_name: str
     messages_amount: int
     price: int
 
@@ -50,6 +51,7 @@ async def commentary_info(message: Message, db: asyncpg.Pool):
         kb.button(
             text=f"{messages} комментариев за {data["price"]}⭐",
             callback_data=PackageCallbackData(
+                package_name=package_name,
                 messages_amount=messages,
                 price=data["price"],
             ),
@@ -89,13 +91,13 @@ async def commentary_handler_recall(callback: CallbackQuery, db: asyncpg.Pool):
     await commentary_info(callback.message.reply_to_message, db)
 
 
-@router.callback_query(F.data.startswith("buy:"))
-async def send_invoice(callback: CallbackQuery):
-    package_name = callback.data.split(":", 1)[1]
+@router.callback_query(PackageCallbackData.filter())
+async def send_invoice(query: CallbackQuery, callback_data: PackageCallbackData):
+    package_name = callback_data.package_name
     package_data = Payment.packages[package_name]
 
-    await callback.bot.send_invoice(
-        chat_id=callback.message.chat.id,
+    await query.bot.send_invoice(
+        chat_id=query.message.chat.id,
         title=f"PozdGPT-комментатор",
         description=f"{package_data["messages_amount"]} комментариев в вашем канале от PozdGPT",
         payload=package_name,
@@ -105,7 +107,7 @@ async def send_invoice(callback: CallbackQuery):
             amount=package_data["price"],
         )]
     )
-    await callback.answer()
+    await query.answer()
 
 
 @router.pre_checkout_query()
