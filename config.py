@@ -33,7 +33,7 @@ class Payment:
 
 @dataclass
 class ChatBotParams:
-    vllm_host = f"http://vllm:{environ.get("VLLM_PORT", 8148)}/v1"
+    vllm_host = environ.get("VLLM_HOST", f"http://vllm:{environ.get("VLLM_PORT", 8148)}/v1")
     vllm_api_key = environ.get("VLLM_API_KEY", "key")
     vllm_model_name = environ.get("VLLM_MODEL_NAME", "pozdgpt")
 
