@@ -4,3 +4,4 @@ redis
 loguru
 dotenv
 asyncpg
+apscheduler

@@ -5,7 +5,7 @@ from aiogram import Router
 from aiogram.enums import ChatMemberStatus
 from aiogram.types import ChatMemberUpdated
 
-from config import Payment
+from utils.dbfuncs import add_user
 
 
 router = Router()
@@ -13,16 +13,10 @@ router = Router()
 
 @router.my_chat_member()
 async def on_bot_added(event: ChatMemberUpdated, db: asyncpg.Pool):
-    if event.from_user:
-        await db.execute("""
-            INSERT INTO users (tg_user_id, username, balance)
-            VALUES ($1, $2, $3)
-            ON CONFLICT (tg_user_id) DO NOTHING""",
-            event.from_user.id, event.from_user.username, Payment.default_user_messages,
-        )
-
     if event.new_chat_member.status != ChatMemberStatus.ADMINISTRATOR:
         return
+    if event.from_user:
+        await add_user(event.from_user.id, event.from_user.username, db)
 
     group_id = event.chat.id
     chat_info = await event.bot.get_chat(group_id)
