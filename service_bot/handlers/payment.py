@@ -60,7 +60,7 @@ async def payment_info(message: Message, db: asyncpg.Pool):
         text="Проверить подписку на канал PozdGPT",
         callback_data="payment_recall",
     )
-    kb.adjust(1, 1)
+    kb.adjust(1, 1, 1, 1)
 
     sample_photo = FSInputFile("docs/images/commentary_sample.png")
     text = f"""
@@ -76,8 +76,8 @@ async def payment_info(message: Message, db: asyncpg.Pool):
     Добавьте PozdGPT администратором в группу обсуждений (можно без каких-либо разрешений).
     Готово! Теперь PozdGPT сможет оставлять комментарии под новыми постами.
 
-    Если лимит закончится — его можно пополнить ниже.
-    (с подпиской на канал https://t.me/pozdgpt на {Payment.subscribed_addition_percent}% больше комментариев!)
+    Если лимит ({Payment.default_user_messages} сообщений в день) закончится — его можно пополнить ниже.
+    (с подпиской на канал https://t.me/pozdgpt на {Payment.subscribed_addition_percent}% больше сообщений!)
     """
 
     await message.reply_photo(
