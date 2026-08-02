@@ -29,8 +29,8 @@ class PackageCallbackData(CallbackData, prefix="buy"):
     price: int
 
 
-@router.message(Command("comment"))
-async def commentary_info(message: Message, db: asyncpg.Pool):
+@router.message(Command("monet"))
+async def payment_info(message: Message, db: asyncpg.Pool):
     is_subscribed = False
     channel_member = await message.bot.get_chat_member(
         chat_id=TelegramBotParams.telegram_channel_id,
@@ -49,7 +49,7 @@ async def commentary_info(message: Message, db: asyncpg.Pool):
     for package_name, data in Payment.packages.items():
         messages = int(data["messages_amount"] * (1 + Payment.subscribed_addition_percent / 100 * is_subscribed))
         kb.button(
-            text=f"{messages} комментариев за {data["price"]}⭐",
+            text=f"{messages} сообщений за {data["price"]}⭐",
             callback_data=PackageCallbackData(
                 package_name=package_name,
                 messages_amount=messages,
@@ -58,19 +58,21 @@ async def commentary_info(message: Message, db: asyncpg.Pool):
         )
     kb.button(
         text="Проверить подписку на канал PozdGPT",
-        callback_data="comment_recall",
+        callback_data="payment_recall",
     )
     kb.adjust(1, 1)
 
     sample_photo = FSInputFile("docs/images/commentary_sample.png")
     text = f"""
-    **PozdGPT — комментатор**
+    **PozdGPT — твой главный помощник**
 
-    🤖 PozdGPT может автоматически писать комментарии под вашими постами.
+    🤖  PozdGPT может автоматически писать комментарии под вашими постами.
+        PozdGPT может отвечать в личных чатах (просто упомяните его)
+        PozdGPT может отвечать в ваших группах (также можно просто упомянуть его!)
 
-    ⭐ Осталось комментариев: **{user_balance}**
+    ⭐ Осталось сообщений от PozdGPT: **{user_balance}**
 
-    Чтобы подключить:
+    Чтобы подключить комментарии от PozdGPT:
     Добавьте PozdGPT администратором в группу обсуждений (можно без каких-либо разрешений).
     Готово! Теперь PozdGPT сможет оставлять комментарии под новыми постами.
 
@@ -86,9 +88,9 @@ async def commentary_info(message: Message, db: asyncpg.Pool):
     )
 
 
-@router.callback_query(F.data == "comment_recall")
-async def commentary_handler_recall(callback: CallbackQuery, db: asyncpg.Pool):
-    await commentary_info(callback.message.reply_to_message, db)
+@router.callback_query(F.data == "payment_recall")
+async def payment_handler_recall(callback: CallbackQuery, db: asyncpg.Pool):
+    await payment_info(callback.message.reply_to_message, db)
 
 
 @router.callback_query(PackageCallbackData.filter())

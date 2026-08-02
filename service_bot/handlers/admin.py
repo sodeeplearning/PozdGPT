@@ -13,7 +13,7 @@ from config import TelegramBotParams
 router = Router()
 
 
-async def broadcast_task(bot: Bot, db: asyncpg.Pool, text: str, report_chat_id: int):
+async def send_everyone_task(bot: Bot, db: asyncpg.Pool, text: str, report_chat_id: int):
     rows = await db.fetch("SELECT tg_user_id FROM users")
     user_ids = [row["tg_user_id"] for row in rows]
 
@@ -38,7 +38,10 @@ async def broadcast_task(bot: Bot, db: asyncpg.Pool, text: str, report_chat_id: 
             logger.error(f"Failed to send to {tg_user_id}: {e}")
         await asyncio.sleep(0.05)
 
-    await bot.send_message(report_chat_id, f"Рассылка завершена. Успешно: {success}. Неуспешно: {failed}")
+    await bot.send_message(
+        report_chat_id,
+        f"Рассылка завершена. Успешно: {success}. Неуспешно: {failed}"
+    )
 
 
 @router.message(Command("send_everyone"))
@@ -49,5 +52,5 @@ async def send_message_everyone(message: Message, command: CommandObject, db: as
         await message.reply("Использование: /send_everyone текст сообщения")
         return
 
-    asyncio.create_task(broadcast_task(message.bot, db, command.args, message.chat.id))
+    asyncio.create_task(send_everyone_task(message.bot, db, command.args, message.chat.id))
     await message.reply("Рассылка запущена в фоне.")

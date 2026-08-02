@@ -4,7 +4,7 @@ from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 
-from . import admin, comment, hooks, payment, dialog
+from . import admin, hooks, payment, dialog
 
 from utils.dbfuncs import add_user
 
@@ -13,7 +13,6 @@ router = Router()
 
 router.include_routers(
     admin.router,
-    comment.router,
     hooks.router,
     payment.router,
     dialog.router,
