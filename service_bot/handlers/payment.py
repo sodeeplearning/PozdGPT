@@ -78,6 +78,8 @@ async def payment_info(message: Message, db: asyncpg.Pool):
 
     Если лимит ({Payment.default_user_messages} сообщений в день) закончится — его можно пополнить ниже.
     (с подпиской на канал https://t.me/pozdgpt на {Payment.subscribed_addition_percent}% больше сообщений!)
+
+    Каждая ваша покупка позволяет проекту развиваться ❤️️
     """
 
     await message.reply_photo(
@@ -95,18 +97,15 @@ async def payment_handler_recall(callback: CallbackQuery, db: asyncpg.Pool):
 
 @router.callback_query(PackageCallbackData.filter())
 async def send_invoice(query: CallbackQuery, callback_data: PackageCallbackData):
-    package_name = callback_data.package_name
-    package_data = Payment.packages[package_name]
-
     await query.bot.send_invoice(
         chat_id=query.message.chat.id,
-        title=f"PozdGPT-комментатор",
-        description=f"{package_data["messages_amount"]} комментариев в вашем канале от PozdGPT",
-        payload=package_name,
+        title=f"Сообщения от PozdGPT",
+        description=f"{callback_data.messages_amount} комментариев в вашем канале от PozdGPT",
+        payload=f"{callback_data.messages_amount}:{callback_data.price}",
         currency="XTR",
         prices=[LabeledPrice(
-            label=f"{package_data["messages_amount"]} комментариев",
-            amount=package_data["price"],
+            label=f"{callback_data.messages_amount} комментариев",
+            amount=callback_data.price,
         )]
     )
     await query.answer()
@@ -121,7 +120,7 @@ async def pre_checkout(query: PreCheckoutQuery):
 async def on_payment(message: Message, db: asyncpg.Pool):
     logger.info("Received payment")
     payload = message.successful_payment.invoice_payload
-    data = Payment.packages[payload]
+    messages_amount, price = [int(x) for x in payload.split(":")]
     charge_id = message.successful_payment.telegram_payment_charge_id
 
     async with db.acquire() as conn:
@@ -129,16 +128,16 @@ async def on_payment(message: Message, db: asyncpg.Pool):
             try:
                 await conn.execute(
                     "INSERT INTO transactions (charge_id, tg_user_id, messages_added, price) VALUES ($1, $2, $3, $4)",
-                    charge_id, message.from_user.id, data["messages_amount"], data["price"]
+                    charge_id, message.from_user.id, messages_amount, price,
                 )
                 await conn.execute(
                     "UPDATE users SET balance = balance + $1 WHERE tg_user_id = $2",
-                    data["messages_amount"], message.from_user.id,
+                    messages_amount, message.from_user.id,
                 )
             except asyncpg.UniqueViolationError:
                 logger.error(f"UniqueViolationError while transaction process: {charge_id}")
                 return
 
     await message.reply(
-        f"Баланс комментариев от PozdGPT пополнен на {data["messages_amount"]} комментариев"
+        f"Баланс комментариев от PozdGPT пополнен на {messages_amount} комментариев"
     )
