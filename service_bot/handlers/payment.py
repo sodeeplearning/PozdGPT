@@ -22,6 +22,8 @@ from config import TelegramBotParams, Payment
 
 router = Router()
 
+commentary_sample_photo = FSInputFile("docs/images/commentary_sample.png")
+
 
 class PackageCallbackData(CallbackData, prefix="buy"):
     package_name: str
@@ -62,7 +64,6 @@ async def payment_info(message: Message, db: asyncpg.Pool):
     )
     kb.adjust(1, 1, 1, 1)
 
-    sample_photo = FSInputFile("docs/images/commentary_sample.png")
     text = f"""
     **PozdGPT — твой главный помощник**
 
@@ -83,7 +84,7 @@ async def payment_info(message: Message, db: asyncpg.Pool):
     """
 
     await message.reply_photo(
-        photo=sample_photo,
+        photo=commentary_sample_photo,
         caption=text,
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=kb.as_markup(),
