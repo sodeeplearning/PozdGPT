@@ -2,3 +2,4 @@ aiogram
 openai
 redis
 asyncpg
+apscheduler

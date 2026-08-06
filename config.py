@@ -26,10 +26,12 @@ class TelegramBotParams:
 @dataclass
 class Payment:
     packages = {  # package_name: commentaries amount - price in telegram stars
-        "package_100": {"messages_amount": 100, "price": 3}
+        "package_100": {"messages_amount": 100, "price": 10},
+        "package_200": {"messages_amount": 200, "price": 15},
+        "package_500": {"messages_amount": 500, "price": 25},
     }
-    default_user_messages = 50
-    subscribed_addition_percent = 20
+    default_user_messages = 30
+    subscribed_addition_percent = 10
 
 @dataclass
 class ChatBotParams:
