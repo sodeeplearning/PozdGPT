@@ -90,12 +90,8 @@ your changes can help the project.
 
 Fell free to contact the team if you need it
 
-# Team info
-[Vitaliy Petreev](https://github.com/sodeeplearning) - Head of the project
-
 ### Contacts
-- [Telegram](https://t.me/Notfag)
-- email: vitaliy.petreev@gmail.com
+- [Telegram](https://t.me/pozdgpt)
 
 # Cautions
 ⚠⚠⚠
